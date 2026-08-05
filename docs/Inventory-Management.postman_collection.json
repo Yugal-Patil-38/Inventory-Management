@@ -1,0 +1,465 @@
+{
+  "info": {
+    "name": "Inventory Management API",
+    "description": "MERN Inventory Management System.\n\nSetup:\n1. Start the backend on http://localhost:5000\n2. Run Auth > Login (or Register) first — a test script stores the JWT in the {{token}} collection variable automatically.\n3. Every other request inherits Authorization: Bearer {{token}} from the collection.\n\nSuggested run order: Register/Login -> Create Category -> Create Product -> Stock In -> Get Products -> Dashboard Stats",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" },
+    { "key": "categoryId", "value": "" },
+    { "key": "productId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] },
+            "description": "Public. Confirms the API is running. Expect 200."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('token', pm.response.json().token);",
+                  "    pm.test('Registered and token saved', function () {",
+                  "        pm.expect(pm.response.json()).to.have.property('token');",
+                  "    });",
+                  "    pm.test('Password is not returned', function () {",
+                  "        pm.expect(pm.response.json()).to.not.have.property('password');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"secret123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+            "description": "Public. Creates an account and returns a JWT. 201 on success, 400 if a field is missing or the password is under 6 characters, 409 if the email is taken."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('token', pm.response.json().token);",
+                  "    pm.test('Logged in and token saved', function () {",
+                  "        pm.expect(pm.response.json()).to.have.property('token');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"secret123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "description": "Public. Returns a JWT. 401 for BOTH a wrong password and an unknown email, with an identical message, to prevent user enumeration."
+          }
+        },
+        {
+          "name": "Login - Wrong Password (expect 401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"wrongpassword\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "description": "Negative test. Expect 401 'Invalid email or password' — byte-identical to the unknown-email response."
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] },
+            "description": "Protected. Returns the user identified by the token. Used by the frontend to restore a session after a page refresh."
+          }
+        },
+        {
+          "name": "Get Current User - No Token (expect 401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] },
+            "description": "Negative test. Expect 401 'Not authorized, no token'."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Create Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('categoryId', pm.response.json()._id);",
+                  "    pm.test('Category created', function () {",
+                  "        pm.response.to.have.status(201);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Electronics\",\n    \"description\": \"Phones, laptops and accessories\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] },
+            "description": "Protected. 201 on success. createdBy is taken from the token, never the body."
+          }
+        },
+        {
+          "name": "Create Category - Duplicate Casing (expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n    \"name\": \"electronics\"\n}" },
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] },
+            "description": "Negative test. Lowercase 'electronics' must be rejected as a duplicate of 'Electronics'. The check uses a MongoDB collation with strength 2 (case-insensitive)."
+          }
+        },
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] },
+            "description": "Protected. Returns every category, newest first, each with a productCount from a single $group aggregation."
+          }
+        },
+        {
+          "name": "Get Category By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["categories", "{{categoryId}}"] }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Electronics\",\n    \"description\": \"Updated description\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["categories", "{{categoryId}}"] },
+            "description": "Protected. Keeping the same name must succeed — the duplicate check excludes the record being edited using _id: { $ne: id }."
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["categories", "{{categoryId}}"] },
+            "description": "Protected. Returns 409 while any product still references this category (application-level ON DELETE RESTRICT)."
+          }
+        },
+        {
+          "name": "Get Category - Malformed Id (expect 400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/categories/not-a-real-id", "host": ["{{baseUrl}}"], "path": ["categories", "not-a-real-id"] },
+            "description": "Negative test. A Mongoose CastError is mapped to 400 'Invalid id format', not 500."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Create Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('productId', pm.response.json()._id);",
+                  "    pm.test('SKU stored uppercase', function () {",
+                  "        pm.expect(pm.response.json().sku).to.eql('EL-MOU-001');",
+                  "    });",
+                  "    pm.test('Status derived from quantity', function () {",
+                  "        pm.expect(pm.response.json().status).to.eql('In Stock');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Wireless Mouse\",\n    \"sku\": \"el-mou-001\",\n    \"category\": \"{{categoryId}}\",\n    \"description\": \"Ergonomic wireless mouse\",\n    \"quantity\": 50,\n    \"unitPrice\": 799,\n    \"supplier\": \"Logi Distributors\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] },
+            "description": "Protected. Note the lowercase SKU in the request — it is stored uppercase. status is never sent by the client; it is derived from quantity."
+          }
+        },
+        {
+          "name": "Create Product - Duplicate SKU (expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Copy\",\n    \"sku\": \"EL-MOU-001\",\n    \"category\": \"{{categoryId}}\",\n    \"quantity\": 1,\n    \"unitPrice\": 10\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] },
+            "description": "Negative test. Expect 409 'SKU already exists'."
+          }
+        },
+        {
+          "name": "Create Product - Negative Price (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Bad Product\",\n    \"sku\": \"BAD-001\",\n    \"category\": \"{{categoryId}}\",\n    \"quantity\": 1,\n    \"unitPrice\": -5\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] },
+            "description": "Negative test. Expect 400 'Quantity and unit price cannot be negative'."
+          }
+        },
+        {
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] },
+            "description": "Protected. Returns { products, page, totalPages, totalProducts }. category is populated with only _id and name."
+          }
+        },
+        {
+          "name": "Get Products - Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?search=mouse",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [{ "key": "search", "value": "mouse" }]
+            },
+            "description": "Case-insensitive partial match on product name OR sku, via $or with $regex."
+          }
+        },
+        {
+          "name": "Get Products - Filter Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?status=Low Stock",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [{ "key": "status", "value": "Low Stock" }]
+            },
+            "description": "Filtering by status works as a real database query because status is stored, not computed on read."
+          }
+        },
+        {
+          "name": "Get Products - Sort And Paginate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?sortBy=unitPrice&order=asc&page=1&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "sortBy", "value": "unitPrice" },
+                { "key": "order", "value": "asc" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            },
+            "description": "sortBy is whitelisted to name, unitPrice, quantity and createdAt; anything else falls back to createdAt. skip((page-1)*limit) drives pagination."
+          }
+        },
+        {
+          "name": "Get Product By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Wireless Mouse Pro\",\n    \"sku\": \"EL-MOU-001\",\n    \"category\": \"{{categoryId}}\",\n    \"description\": \"Upgraded model\",\n    \"quantity\": 8,\n    \"unitPrice\": 899,\n    \"supplier\": \"Logi Distributors\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] },
+            "description": "Protected. Dropping quantity from 50 to 8 must flip status to 'Low Stock' automatically."
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{productId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Stock In",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"IN\",\n    \"quantity\": 20,\n    \"note\": \"Received from supplier\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/inventory/{{productId}}", "host": ["{{baseUrl}}"], "path": ["inventory", "{{productId}}"] },
+            "description": "Protected. Increases stock, recalculates status, and writes an InventoryTransaction audit record. Returns the updated product."
+          }
+        },
+        {
+          "name": "Stock Out",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"OUT\",\n    \"quantity\": 5,\n    \"note\": \"Sold\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/inventory/{{productId}}", "host": ["{{baseUrl}}"], "path": ["inventory", "{{productId}}"] }
+          }
+        },
+        {
+          "name": "Stock Out - Exceeds Stock (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n    \"type\": \"OUT\",\n    \"quantity\": 99999\n}" },
+            "url": { "raw": "{{baseUrl}}/inventory/{{productId}}", "host": ["{{baseUrl}}"], "path": ["inventory", "{{productId}}"] },
+            "description": "Negative test. Expect 400 'Cannot remove 99999. Only N left in stock'. The request is REJECTED, not clamped to zero — stock is left unchanged."
+          }
+        },
+        {
+          "name": "Stock - Invalid Type (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n    \"type\": \"SIDEWAYS\",\n    \"quantity\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/inventory/{{productId}}", "host": ["{{baseUrl}}"], "path": ["inventory", "{{productId}}"] },
+            "description": "Negative test. Expect 400 'Type must be IN or OUT'."
+          }
+        },
+        {
+          "name": "Get All Activity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/inventory?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["inventory"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Protected. All stock movements across all products, newest first, with product and createdBy populated."
+          }
+        },
+        {
+          "name": "Get Product History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/inventory/{{productId}}", "host": ["{{baseUrl}}"], "path": ["inventory", "{{productId}}"] },
+            "description": "Protected. Last 10 movements for one product. Served entirely by the compound index { product: 1, createdAt: -1 }."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/dashboard/stats", "host": ["{{baseUrl}}"], "path": ["dashboard", "stats"] },
+            "description": "Protected. Seven queries run concurrently with Promise.all. totalStock is a $group/$sum aggregation because countDocuments counts documents and cannot sum a field."
+          }
+        }
+      ]
+    }
+  ]
+}
