@@ -13,6 +13,8 @@ Built as a Junior Full Stack Developer technical assignment.
 - JWT-based stateless authentication
 - Passwords hashed with bcrypt (salt + cost factor 10)
 - Protected API routes and protected frontend routes
+- Role-based authorization: the first registered user becomes `admin`, everyone after is `staff`
+- Only `admin` may delete products or categories
 - Session survives a page refresh
 
 **Category Management**
@@ -22,7 +24,7 @@ Built as a Junior Full Stack Developer technical assignment.
 - Live product count per category
 
 **Product Management**
-- Full CRUD
+- Full CRUD plus a dedicated product details page
 - Unique SKU (normalised to uppercase)
 - Every product belongs to a category
 - Automatic stock status derived from quantity
@@ -182,6 +184,7 @@ erDiagram
         String   name
         String   email UK "unique, lowercase"
         String   password "bcrypt hash, select false"
+        String   role "enum: admin | staff"
         Date     createdAt
         Date     updatedAt
     }
@@ -277,24 +280,35 @@ Postman collection: **[docs/Inventory-Management.postman_collection.json](docs/I
 | 6 | GET | `/api/categories` | ✅ | List categories with product counts |
 | 7 | GET | `/api/categories/:id` | ✅ | Get one category |
 | 8 | PUT | `/api/categories/:id` | ✅ | Update category |
-| 9 | DELETE | `/api/categories/:id` | ✅ | Delete (blocked if in use) |
+| 9 | DELETE | `/api/categories/:id` | 🔑 admin | Delete (blocked if in use) |
 | 10 | POST | `/api/products` | ✅ | Create product |
 | 11 | GET | `/api/products` | ✅ | List with search/filter/sort/pagination |
-| 12 | GET | `/api/products/:id` | ✅ | Get one product |
+| 12 | GET | `/api/products/:id` | ✅ | Get one product (details page) |
 | 13 | PUT | `/api/products/:id` | ✅ | Update product |
-| 14 | DELETE | `/api/products/:id` | ✅ | Delete product |
+| 14 | DELETE | `/api/products/:id` | 🔑 admin | Delete product |
 | 15 | GET | `/api/inventory` | ✅ | All stock movements, paginated |
 | 16 | POST | `/api/inventory/:productId` | ✅ | Record stock in/out |
 | 17 | GET | `/api/inventory/:productId` | ✅ | One product's movement history |
 | 18 | GET | `/api/dashboard/stats` | ✅ | Dashboard statistics |
 
-### Authentication
+### Authentication and Authorization
 
 Protected endpoints require a bearer token:
 
 ```
 Authorization: Bearer <token>
 ```
+
+Endpoints marked 🔑 **admin** additionally require the `admin` role. A `staff` user
+calling them receives **403 Forbidden**.
+
+| Role | Can do | Cannot do |
+|---|---|---|
+| `admin` | Everything | — |
+| `staff` | Create/edit products and categories, move stock, view everything | Delete products or categories |
+
+The **first user to register becomes `admin`** (they are setting the system up); every
+later registration defaults to `staff`. Role is never accepted from the request body.
 
 ### Query Parameters — `GET /api/products`
 
@@ -316,6 +330,7 @@ Authorization: Bearer <token>
 | 201 | Created |
 | 400 | Validation failed / insufficient stock / malformed id |
 | 401 | Missing, invalid or expired token; bad credentials |
+| 403 | Authenticated, but the role is not permitted to do this |
 | 404 | Resource not found |
 | 409 | Duplicate resource, or category still in use |
 | 500 | Unhandled server error |
@@ -383,6 +398,7 @@ Inventory-Management/
 │   │   │   ├── Dashboard.jsx
 │   │   │   ├── Products.jsx
 │   │   │   ├── ProductForm.jsx       handles both create and edit
+│   │   │   ├── ProductDetails.jsx    read-only view + stock history
 │   │   │   ├── Categories.jsx
 │   │   │   ├── Inventory.jsx
 │   │   │   └── NotFound.jsx
@@ -434,13 +450,14 @@ These are deliberate scope decisions, not oversights:
 | No token refresh | A leaked token is valid for its full 7 days | Short-lived access tokens plus refresh tokens |
 | Category uniqueness race | The case-insensitive check is on the query, not the index | Recreate the unique index with a collation |
 | Shared inventory | All logged-in users see the same data | Compound `{ createdBy, sku }` index and per-user filtering |
+| Only two roles | `admin` and `staff`, with one rule (delete) | A permissions table, or a library such as CASL |
 | No automated tests | Verified manually and via the Postman collection | Jest + Supertest for the API, React Testing Library for the UI |
 
 ---
 
 ## Future Improvements
 
-- Role-based access control (admin vs staff)
+- Granular permissions beyond admin/staff
 - Product image upload
 - CSV import and export
 - Low-stock email alerts

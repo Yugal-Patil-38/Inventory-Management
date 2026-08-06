@@ -8,6 +8,10 @@ All request and response bodies are JSON. Protected endpoints require:
 Authorization: Bearer <token>
 ```
 
+Endpoints marked 🔑 require the `admin` role in addition to a valid token; a `staff`
+user receives **403 Forbidden**. The first user to register becomes `admin`; everyone
+after defaults to `staff`.
+
 Every error response uses the same shape:
 
 ```json
@@ -54,9 +58,13 @@ Creates an account and returns a token, so the user is logged in immediately.
   "_id": "6a737780913da4f0019c0c40",
   "name": "Test User",
   "email": "test@example.com",
+  "role": "admin",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
+
+`role` is assigned by the server — `admin` if this is the very first account,
+otherwise `staff`. It is never read from the request body.
 
 The password is never returned — the schema field is `select: false`.
 
@@ -83,6 +91,7 @@ The password is never returned — the schema field is `select: false`.
   "_id": "6a737780913da4f0019c0c40",
   "name": "Test User",
   "email": "test@example.com",
+  "role": "admin",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
@@ -108,6 +117,7 @@ Returns the user identified by the token. Used by the frontend on mount to resto
   "_id": "6a737780913da4f0019c0c40",
   "name": "Test User",
   "email": "test@example.com",
+  "role": "admin",
   "createdAt": "2026-08-05T17:48:48.653Z",
   "updatedAt": "2026-08-05T17:48:48.653Z"
 }
@@ -217,7 +227,7 @@ The duplicate check excludes the category being edited (`_id: { $ne: id }`), so 
 
 ---
 
-### `DELETE /api/categories/:id` 🔒
+### `DELETE /api/categories/:id` 🔒 🔑
 
 Blocked while any product references the category.
 
@@ -230,6 +240,7 @@ Blocked while any product references the category.
 
 | Code | When | Message |
 |---|---|---|
+| 403 | Caller is `staff` | `You do not have permission to perform this action` |
 | 404 | Not found | `Category not found` |
 | 409 | Still in use | `Cannot delete. 3 product(s) use this category` |
 
@@ -348,6 +359,9 @@ GET /api/products?search=mouse&status=Low%20Stock&sortBy=unitPrice&order=asc&pag
 
 ### `GET /api/products/:id` 🔒
 
+Backs the product details page, which renders all ten assignment fields including
+**Date Added** (`createdAt`) and **Last Updated** (`updatedAt`).
+
 **Response — 200** — one product with `category` populated.
 
 **Errors:** `400 Invalid id format` · `404 Product not found`
@@ -362,12 +376,14 @@ Same body as create. `status` is recalculated from the new quantity.
 
 ---
 
-### `DELETE /api/products/:id` 🔒
+### `DELETE /api/products/:id` 🔒 🔑
 
 **Response — 200**
 ```json
 { "message": "Product deleted" }
 ```
+
+**Errors:** `403` if the caller is `staff` · `404 Product not found`
 
 ---
 
