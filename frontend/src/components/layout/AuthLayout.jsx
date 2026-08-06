@@ -70,7 +70,7 @@ function AuthLayout({ title, subtitle, children }) {
         </div>
 
         <p className="relative text-xs text-brand-200">
-          &copy; {new Date().getFullYear()} StockFlow. All rights reserved.
+          
         </p>
       </div>
 
