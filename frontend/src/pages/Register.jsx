@@ -6,22 +6,68 @@ import Input from '../components/common/Input'
 import Button from '../components/common/Button'
 
 function Register() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  })
+
+  const [errors, setErrors] = useState({})
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { register } = useContext(AuthContext)
   const navigate = useNavigate()
 
+  const handleChange = (event) => {
+    const { name, value } = event.target
+
+    setForm({ ...form, [name]: value })
+    setErrors({ ...errors, [name]: '' })
+  }
+
+  const validate = () => {
+    const nextErrors = {}
+
+    if (!form.name.trim()) {
+      nextErrors.name = 'Name is required'
+    }
+
+    if (!form.email.trim()) {
+      nextErrors.email = 'Email is required'
+    }
+
+    if (!form.password) {
+      nextErrors.password = 'Password is required'
+    } else if (form.password.length < 6) {
+      nextErrors.password = 'Password must be at least 6 characters'
+    }
+
+    if (!form.confirmPassword) {
+      nextErrors.confirmPassword = 'Please confirm your password'
+    } else if (form.password !== form.confirmPassword) {
+      nextErrors.confirmPassword = 'Passwords do not match'
+    }
+
+    return nextErrors
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
+
+    const nextErrors = validate()
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
-      await register(name, email, password)
+      await register(form.name, form.email, form.password)
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to register')
@@ -53,36 +99,52 @@ function Register() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
             <Input
               label="Full name"
               type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
+              name="name"
+              value={form.name}
+              onChange={handleChange}
               placeholder="Jane Cooper"
               icon={User}
+              error={errors.name}
               required
             />
 
             <Input
               label="Email"
               type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              name="email"
+              value={form.email}
+              onChange={handleChange}
               placeholder="you@company.com"
               icon={Mail}
+              error={errors.email}
               required
             />
 
             <Input
               label="Password"
               type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="••••••••"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="At least 6 characters"
               icon={Lock}
-              minLength={6}
-              hint="Must be at least 6 characters"
+              error={errors.password}
+              required
+            />
+
+            <Input
+              label="Confirm password"
+              type="password"
+              name="confirmPassword"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              placeholder="Re-enter your password"
+              icon={Lock}
+              error={errors.confirmPassword}
               required
             />
 
