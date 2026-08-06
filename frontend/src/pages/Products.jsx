@@ -73,13 +73,13 @@ function Products() {
     return () => clearTimeout(timer)
   }, [filters, page])
 
-  const handleFilterChange = (event) => {
-    setFilters({ ...filters, [event.target.name]: event.target.value })
+  const handleFilterChange = (name, value) => {
+    setFilters({ ...filters, [name]: value })
     setPage(1)
   }
 
-  const handleSortChange = (event) => {
-    const [sortBy, order] = event.target.value.split('-')
+  const handleSortChange = (value) => {
+    const [sortBy, order] = value.split('-')
     setFilters({ ...filters, sortBy, order })
     setPage(1)
   }
@@ -115,11 +115,11 @@ function Products() {
         }
       />
 
-      <Card className="mt-6 overflow-hidden">
+      <Card className="mt-6">
         <ProductFilters
           filters={filters}
           categories={categories}
-          onChange={handleFilterChange}
+          onFilterChange={handleFilterChange}
           onSortChange={handleSortChange}
         />
 

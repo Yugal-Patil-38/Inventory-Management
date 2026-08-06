@@ -240,9 +240,11 @@ function ProductForm() {
 
                 <Select
                   label="Category"
-                  name="category"
                   value={form.category}
-                  onChange={handleChange}
+                  onChange={(value) => {
+                    setForm({ ...form, category: value })
+                    setErrors({ ...errors, category: '' })
+                  }}
                   options={categoryOptions}
                   placeholder="Select a category"
                   error={errors.category}

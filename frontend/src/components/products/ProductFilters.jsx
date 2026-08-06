@@ -16,7 +16,7 @@ const sortOptions = [
   { value: 'quantity-asc', label: 'Quantity low to high' },
 ]
 
-function ProductFilters({ filters, categories, onChange, onSortChange }) {
+function ProductFilters({ filters, categories, onFilterChange, onSortChange }) {
   const categoryOptions = categories.map((category) => ({
     value: category._id,
     label: category.name,
@@ -26,25 +26,22 @@ function ProductFilters({ filters, categories, onChange, onSortChange }) {
     <div className="grid gap-3 border-b border-slate-200 p-4 sm:grid-cols-2 lg:grid-cols-4 dark:border-slate-800">
       <Input
         type="text"
-        name="search"
         value={filters.search}
-        onChange={onChange}
+        onChange={(event) => onFilterChange('search', event.target.value)}
         placeholder="Search name or SKU..."
         icon={Search}
       />
 
       <Select
-        name="category"
         value={filters.category}
-        onChange={onChange}
+        onChange={(value) => onFilterChange('category', value)}
         options={categoryOptions}
         placeholder="All categories"
       />
 
       <Select
-        name="status"
         value={filters.status}
-        onChange={onChange}
+        onChange={(value) => onFilterChange('status', value)}
         options={statusOptions}
         placeholder="All statuses"
       />
@@ -53,6 +50,8 @@ function ProductFilters({ filters, categories, onChange, onSortChange }) {
         value={`${filters.sortBy}-${filters.order}`}
         onChange={onSortChange}
         options={sortOptions}
+        placeholder="Sort by"
+        required
       />
     </div>
   )

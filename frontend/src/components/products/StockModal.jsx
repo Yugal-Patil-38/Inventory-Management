@@ -92,10 +92,10 @@ function StockModal({ product, onClose, onSaved }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <Select
             label="Movement type"
-            name="type"
             value={form.type}
-            onChange={handleChange}
+            onChange={(value) => setForm({ ...form, type: value })}
             options={typeOptions}
+            required
           />
 
           <Input
