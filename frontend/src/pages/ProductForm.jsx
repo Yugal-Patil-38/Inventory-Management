@@ -1,33 +1,38 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Info } from 'lucide-react'
+import { ArrowLeft, Info, Package } from 'lucide-react'
 import productService from '../services/productService'
 import categoryService from '../services/categoryService'
 import PageHeader from '../components/common/PageHeader'
 import Card from '../components/common/Card'
 import Input from '../components/common/Input'
 import Select from '../components/common/Select'
+import Textarea from '../components/common/Textarea'
 import Button from '../components/common/Button'
+import StatusBadge from '../components/common/StatusBadge'
 import { Skeleton } from '../components/common/Skeleton'
+import { formatCurrency } from '../utils/formatters'
+import { getStockStatus } from '../utils/stockStatus'
+
+const emptyForm = {
+  name: '',
+  sku: '',
+  category: '',
+  description: '',
+  quantity: '',
+  unitPrice: '',
+  supplier: '',
+}
 
 function ProductForm() {
   const { id } = useParams()
   const navigate = useNavigate()
 
-  const [form, setForm] = useState({
-    name: '',
-    sku: '',
-    category: '',
-    description: '',
-    quantity: 0,
-    unitPrice: 0,
-    supplier: '',
-  })
-
+  const [form, setForm] = useState(emptyForm)
+  const [errors, setErrors] = useState({})
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -50,7 +55,7 @@ function ProductForm() {
           })
         }
       } catch (err) {
-        setError(err.response?.data?.message || 'Unable to load form data')
+        toast.error(err.response?.data?.message || 'Unable to load form data')
       } finally {
         setLoading(false)
       }
@@ -60,12 +65,53 @@ function ProductForm() {
   }, [id])
 
   const handleChange = (event) => {
-    setForm({ ...form, [event.target.name]: event.target.value })
+    const { name, value } = event.target
+
+    setForm({ ...form, [name]: value })
+    setErrors({ ...errors, [name]: '' })
+  }
+
+  const validate = () => {
+    const nextErrors = {}
+
+    if (!form.name.trim()) {
+      nextErrors.name = 'Product name is required'
+    }
+
+    if (!form.sku.trim()) {
+      nextErrors.sku = 'SKU is required'
+    }
+
+    if (!form.category) {
+      nextErrors.category = 'Please select a category'
+    }
+
+    if (form.unitPrice === '') {
+      nextErrors.unitPrice = 'Unit price is required'
+    } else if (Number(form.unitPrice) < 0) {
+      nextErrors.unitPrice = 'Price cannot be negative'
+    }
+
+    if (form.quantity === '') {
+      nextErrors.quantity = 'Quantity is required'
+    } else if (Number(form.quantity) < 0) {
+      nextErrors.quantity = 'Quantity cannot be negative'
+    }
+
+    return nextErrors
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    setError('')
+
+    const nextErrors = validate()
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
+      toast.error('Please fix the highlighted fields')
+      return
+    }
+
     setIsSubmitting(true)
 
     const payload = {
@@ -85,8 +131,15 @@ function ProductForm() {
 
       navigate('/products')
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to save product')
-      toast.error(err.response?.data?.message || 'Unable to save product')
+      const message = err.response?.data?.message || 'Unable to save product'
+
+      if (message.includes('SKU')) {
+        setErrors({ sku: message })
+      } else if (message.includes('category')) {
+        setErrors({ category: message })
+      }
+
+      toast.error(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -94,14 +147,31 @@ function ProductForm() {
 
   if (loading) {
     return (
-      <Card className="max-w-3xl p-6">
-        <Skeleton className="h-5 w-40" />
-        <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <Skeleton key={index} className="h-10 w-full" />
-          ))}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <Card className="p-6">
+            <Skeleton className="h-4 w-32" />
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-10 w-full" />
+              ))}
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <Skeleton className="h-4 w-32" />
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </Card>
         </div>
-      </Card>
+
+        <Card className="h-fit p-6">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="mt-6 h-16 w-full" />
+        </Card>
+      </div>
     )
   }
 
@@ -109,6 +179,12 @@ function ProductForm() {
     value: category._id,
     label: category.name,
   }))
+
+  const previewQuantity = Number(form.quantity) || 0
+  const previewValue = previewQuantity * (Number(form.unitPrice) || 0)
+  const selectedCategory = categories.find(
+    (category) => category._id === form.category
+  )
 
   return (
     <div>
@@ -129,138 +205,202 @@ function ProductForm() {
         }
       />
 
-      <form onSubmit={handleSubmit} className="mt-6 max-w-3xl">
-        {error && (
-          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-500/10 dark:text-red-400">
-            {error}
+      <form onSubmit={handleSubmit} noValidate className="mt-6">
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="flex flex-col gap-6 lg:col-span-2">
+            <Card className="p-6">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Product details
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                Basic information used to identify this item.
+              </p>
+
+              <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                <Input
+                  label="Product name"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="e.g. Wireless Mouse"
+                  error={errors.name}
+                  required
+                />
+
+                <Input
+                  label="SKU"
+                  name="sku"
+                  value={form.sku}
+                  onChange={handleChange}
+                  placeholder="e.g. EL-MOU-001"
+                  hint="Saved in uppercase and must be unique"
+                  error={errors.sku}
+                  required
+                />
+
+                <Select
+                  label="Category"
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  options={categoryOptions}
+                  placeholder="Select a category"
+                  error={errors.category}
+                  required
+                />
+
+                <Input
+                  label="Supplier"
+                  name="supplier"
+                  value={form.supplier}
+                  onChange={handleChange}
+                  placeholder="e.g. Logi Distributors"
+                />
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Pricing and stock
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                Stock status is calculated automatically from quantity.
+              </p>
+
+              <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                <Input
+                  label="Unit price"
+                  type="number"
+                  name="unitPrice"
+                  value={form.unitPrice}
+                  onChange={handleChange}
+                  placeholder="0.00"
+                  min={0}
+                  step="0.01"
+                  error={errors.unitPrice}
+                  required
+                />
+
+                <Input
+                  label="Quantity"
+                  type="number"
+                  name="quantity"
+                  value={form.quantity}
+                  onChange={handleChange}
+                  placeholder="0"
+                  min={0}
+                  error={errors.quantity}
+                  required
+                />
+              </div>
+
+              <div className="mt-4 flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2.5 dark:bg-slate-800/50">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  More than 10 units is <strong>In Stock</strong>, 1 to 10 is{' '}
+                  <strong>Low Stock</strong>, and 0 is{' '}
+                  <strong>Out of Stock</strong>.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Description
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                Optional notes about this product.
+              </p>
+
+              <Textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                rows={4}
+                placeholder="Add any details that help identify this product..."
+                className="mt-5"
+              />
+            </Card>
           </div>
-        )}
 
-        <Card className="p-6">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              Product details
-            </h2>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Basic information used to identify this item.
-            </p>
+          <div className="lg:sticky lg:top-22 lg:h-fit">
+            <Card className="p-6">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Preview
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                How this product will appear.
+              </p>
+
+              <div className="mt-5 flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+                  <Package className="h-4 w-4 text-slate-400" />
+                </div>
+
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {form.name || 'Untitled product'}
+                  </p>
+                  <p className="truncate font-mono text-xs text-slate-400 dark:text-slate-500">
+                    {form.sku ? form.sku.toUpperCase() : 'NO-SKU'}
+                  </p>
+                </div>
+              </div>
+
+              <dl className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">
+                    Category
+                  </dt>
+                  <dd className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {selectedCategory ? selectedCategory.name : '—'}
+                  </dd>
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">
+                    Status
+                  </dt>
+                  <dd>
+                    <StatusBadge status={getStockStatus(previewQuantity)} />
+                  </dd>
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">
+                    Unit price
+                  </dt>
+                  <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {formatCurrency(Number(form.unitPrice) || 0)}
+                  </dd>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  <dt className="text-sm text-slate-500 dark:text-slate-400">
+                    Total value
+                  </dt>
+                  <dd className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    {formatCurrency(previewValue)}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="mt-6 flex flex-col gap-2">
+                <Button type="submit" loading={isSubmitting} className="w-full">
+                  {isSubmitting ? 'Saving' : id ? 'Save changes' : 'Create product'}
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate('/products')}
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </Card>
           </div>
-
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            <Input
-              label="Product name"
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="e.g. Wireless Mouse"
-              required
-            />
-
-            <Input
-              label="SKU"
-              type="text"
-              name="sku"
-              value={form.sku}
-              onChange={handleChange}
-              placeholder="e.g. EL-MOU-001"
-              hint="Saved in uppercase and must be unique"
-              required
-            />
-
-            <Select
-              label="Category"
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-              options={categoryOptions}
-              placeholder="Select a category"
-              required
-            />
-
-            <Input
-              label="Supplier"
-              type="text"
-              name="supplier"
-              value={form.supplier}
-              onChange={handleChange}
-              placeholder="e.g. Logi Distributors"
-            />
-          </div>
-        </Card>
-
-        <Card className="mt-5 p-6">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              Pricing and stock
-            </h2>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Stock status is calculated automatically from quantity.
-            </p>
-          </div>
-
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            <Input
-              label="Unit price"
-              type="number"
-              name="unitPrice"
-              value={form.unitPrice}
-              onChange={handleChange}
-              min={0}
-              step="0.01"
-              required
-            />
-
-            <Input
-              label="Quantity"
-              type="number"
-              name="quantity"
-              value={form.quantity}
-              onChange={handleChange}
-              min={0}
-              required
-            />
-          </div>
-
-          <div className="mt-4 flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2.5 dark:bg-slate-800/50">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              More than 10 units is <strong>In Stock</strong>, 1 to 10 is{' '}
-              <strong>Low Stock</strong>, and 0 is <strong>Out of Stock</strong>.
-            </p>
-          </div>
-        </Card>
-
-        <Card className="mt-5 p-6">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Description</h2>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Optional notes about this product.
-            </p>
-          </div>
-
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            rows={4}
-            placeholder="Add any details that help identify this product..."
-            className="mt-5 w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
-          />
-        </Card>
-
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Button
-            variant="secondary"
-            onClick={() => navigate('/products')}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-
-          <Button type="submit" loading={isSubmitting}>
-            {isSubmitting ? 'Saving' : 'Save product'}
-          </Button>
         </div>
       </form>
     </div>
