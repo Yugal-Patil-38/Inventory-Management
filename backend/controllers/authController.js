@@ -23,12 +23,16 @@ const register = async (req, res, next) => {
       return res.status(409).json({ message: 'Email already registered' });
     }
 
-    const user = await User.create({ name, email, password });
+    const userCount = await User.countDocuments();
+    const role = userCount === 0 ? 'admin' : 'staff';
+
+    const user = await User.create({ name, email, password, role });
 
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -56,6 +60,7 @@ const login = async (req, res, next) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id),
     });
   } catch (error) {
