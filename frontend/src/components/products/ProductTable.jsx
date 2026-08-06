@@ -1,5 +1,7 @@
+import { useContext } from 'react'
 import { Link } from 'react-router-dom'
-import { Package, Pencil, Trash2, ArrowLeftRight } from 'lucide-react'
+import { Package, Pencil, Trash2, ArrowLeftRight, Eye } from 'lucide-react'
+import { AuthContext } from '../../context/AuthContext'
 import Table from '../common/Table'
 import Button from '../common/Button'
 import StatusBadge from '../common/StatusBadge'
@@ -16,6 +18,8 @@ const columns = [
 ]
 
 function ProductTable({ products, onStock, onDelete }) {
+  const { user } = useContext(AuthContext)
+
   return (
     <Table columns={columns} minWidth="min-w-4xl">
       {products.map((product) => (
@@ -30,9 +34,12 @@ function ProductTable({ products, onStock, onDelete }) {
               </div>
 
               <div className="min-w-0">
-                <p className="truncate font-medium text-slate-900 dark:text-slate-100">
+                <Link
+                  to={`/products/${product._id}`}
+                  className="block truncate font-medium text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400"
+                >
                   {product.name}
-                </p>
+                </Link>
                 {product.supplier && (
                   <p className="truncate text-xs text-slate-400 dark:text-slate-500">
                     {product.supplier}
@@ -66,6 +73,14 @@ function ProductTable({ products, onStock, onDelete }) {
 
           <td className="px-5 py-3.5">
             <div className="flex justify-end gap-1 opacity-60 transition-opacity group-hover:opacity-100">
+              <Link
+                to={`/products/${product._id}`}
+                title="View details"
+                className="inline-flex h-8 items-center justify-center rounded-lg px-3 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              >
+                <Eye className="h-4 w-4" />
+              </Link>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -83,15 +98,17 @@ function ProductTable({ products, onStock, onDelete }) {
                 <Pencil className="h-4 w-4" />
               </Link>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onDelete(product)}
-                title="Delete product"
-                className="hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {user?.role === 'admin' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(product)}
+                  title="Delete product"
+                  className="hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </td>
         </tr>

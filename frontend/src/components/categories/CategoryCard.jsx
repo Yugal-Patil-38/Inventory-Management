@@ -1,8 +1,12 @@
+import { useContext } from 'react'
 import { Tag, Pencil, Trash2, Package } from 'lucide-react'
+import { AuthContext } from '../../context/AuthContext'
 import Button from '../common/Button'
 import { formatDate } from '../../utils/formatters'
 
 function CategoryCard({ category, onEdit, onDelete }) {
+  const { user } = useContext(AuthContext)
+
   return (
     <div className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
       <div className="flex items-start justify-between gap-3">
@@ -20,15 +24,17 @@ function CategoryCard({ category, onEdit, onDelete }) {
             <Pencil className="h-4 w-4" />
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(category)}
-            title="Delete category"
-            className="hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {user?.role === 'admin' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(category)}
+              title="Delete category"
+              className="hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 

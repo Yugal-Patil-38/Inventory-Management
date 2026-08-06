@@ -9,6 +9,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Products from './pages/Products'
 import ProductForm from './pages/ProductForm'
+import ProductDetails from './pages/ProductDetails'
 import Categories from './pages/Categories'
 import Inventory from './pages/Inventory'
 import NotFound from './pages/NotFound'
@@ -45,6 +46,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/new" element={<ProductForm />} />
+            <Route path="/products/:id" element={<ProductDetails />} />
             <Route path="/products/:id/edit" element={<ProductForm />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/inventory" element={<Inventory />} />

@@ -94,8 +94,8 @@ function Sidebar({ isOpen, onClose }) {
               <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                 {user?.name}
               </p>
-              <p className="truncate text-xs text-slate-400 dark:text-slate-500">
-                {user?.email}
+              <p className="truncate text-xs capitalize text-slate-400 dark:text-slate-500">
+                {user?.role}
               </p>
             </div>
           </div>
