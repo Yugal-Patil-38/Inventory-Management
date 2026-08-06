@@ -13,7 +13,7 @@ function Textarea({ label, error, hint, required, className = '', ...props }) {
         className={`w-full resize-none rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-4 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 ${
           error
             ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20 dark:border-red-800'
-            : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 dark:border-slate-700 dark:focus:border-blue-500'
+            : 'border-slate-200 focus:border-brand-700 focus:ring-brand-900/15 dark:border-slate-700 dark:focus:border-brand-500'
         }`}
         {...props}
       />

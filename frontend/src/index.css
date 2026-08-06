@@ -2,6 +2,20 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --color-brand-50: #f0f8ff;
+  --color-brand-100: #dbf0ff;
+  --color-brand-200: #b8e0ff;
+  --color-brand-300: #80c8ff;
+  --color-brand-400: #33a7ff;
+  --color-brand-500: #0082e6;
+  --color-brand-600: #0065b3;
+  --color-brand-700: #004880;
+  --color-brand-800: #003157;
+  --color-brand-900: #002038;
+  --color-brand-950: #001424;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

@@ -151,7 +151,7 @@ function Register() {
         Already have an account?{' '}
         <Link
           to="/login"
-          className="font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400"
+          className="font-medium text-brand-800 transition-colors hover:text-brand-900 dark:text-brand-400"
         >
           Sign in
         </Link>

@@ -10,8 +10,8 @@ function CategoryCard({ category, onEdit, onDelete }) {
   return (
     <div className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 transition-transform duration-200 group-hover:scale-105 dark:bg-blue-500/10">
-          <Tag className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 transition-transform duration-200 group-hover:scale-105 dark:bg-brand-400/10">
+          <Tag className="h-5 w-5 text-brand-800 dark:text-brand-400" />
         </div>
 
         <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">

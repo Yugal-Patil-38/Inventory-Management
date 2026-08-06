@@ -80,7 +80,7 @@ function Navbar({ onMenuClick }) {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search products..."
-            className="h-9 w-56 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
+            className="h-9 w-56 rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:border-brand-700 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-900/15 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-800"
           />
         </form>
 
@@ -102,7 +102,7 @@ function Navbar({ onMenuClick }) {
           className="relative rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white dark:ring-slate-900" />
+          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-brand-900 ring-2 ring-white dark:ring-slate-900" />
         </button>
 
         <div className="relative">
@@ -111,7 +111,7 @@ function Navbar({ onMenuClick }) {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="flex items-center gap-2 rounded-lg p-1 pr-2 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-900 text-xs font-semibold text-white">
               {user?.name?.charAt(0).toUpperCase()}
             </span>
 
@@ -129,7 +129,7 @@ function Navbar({ onMenuClick }) {
 
               <div className="absolute right-0 z-20 mt-2 w-56 animate-[fadeIn_150ms_ease-out] rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex items-center gap-3 border-b border-slate-100 px-3 py-2.5 dark:border-slate-800">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-900 text-sm font-semibold text-white">
                     {user?.name?.charAt(0).toUpperCase()}
                   </span>
 

@@ -112,7 +112,7 @@ function Dashboard() {
           label="Total Products"
           value={stats.totalProducts}
           description="Items being tracked"
-          tone="blue"
+          tone="brand"
         />
         <StatCard
           icon={Tags}
@@ -158,7 +158,7 @@ function Dashboard() {
 
             <Link
               to="/products"
-              className="flex items-center gap-1 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400"
+              className="flex items-center gap-1 text-sm font-medium text-brand-800 transition-colors hover:text-brand-900 dark:text-brand-400"
             >
               View all
               <ArrowRight className="h-3.5 w-3.5" />
@@ -278,7 +278,7 @@ function Dashboard() {
 
             <Link
               to="/products?status=Low+Stock"
-              className="flex items-center gap-1 text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400"
+              className="flex items-center gap-1 text-sm font-medium text-brand-800 transition-colors hover:text-brand-900 dark:text-brand-400"
             >
               View all
               <ArrowRight className="h-3.5 w-3.5" />

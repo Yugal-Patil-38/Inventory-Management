@@ -36,7 +36,7 @@ function ProductTable({ products, onStock, onDelete }) {
               <div className="min-w-0">
                 <Link
                   to={`/products/${product._id}`}
-                  className="block truncate font-medium text-slate-900 transition-colors hover:text-blue-600 dark:text-slate-100 dark:hover:text-blue-400"
+                  className="block truncate font-medium text-slate-900 transition-colors hover:text-brand-800 dark:text-slate-100 dark:hover:text-brand-300"
                 >
                   {product.name}
                 </Link>

@@ -2,7 +2,7 @@ import { Loader2 } from 'lucide-react'
 
 const variants = {
   primary:
-    'bg-blue-600 text-white shadow-sm hover:bg-blue-700 focus:ring-blue-500/30 disabled:bg-blue-300 dark:bg-blue-600 dark:hover:bg-blue-500 dark:disabled:bg-blue-900',
+    'bg-brand-900 text-white shadow-sm hover:bg-brand-800 focus:ring-brand-900/30 disabled:bg-brand-900/40 dark:bg-brand-600 dark:hover:bg-brand-500 dark:disabled:bg-brand-900',
   secondary:
     'bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-slate-300 focus:ring-slate-400/20 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:border-slate-600',
   danger:

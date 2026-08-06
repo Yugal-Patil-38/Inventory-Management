@@ -35,7 +35,7 @@ function Sidebar({ isOpen, onClose }) {
         }`}
       >
         <div className="flex h-16 items-center gap-2.5 border-b border-slate-200 px-5 dark:border-slate-800">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-900">
             <Boxes className="h-5 w-5 text-white" />
           </div>
 
@@ -63,7 +63,7 @@ function Sidebar({ isOpen, onClose }) {
               className={({ isActive }) =>
                 `group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                   isActive
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400'
+                    ? 'bg-brand-50 text-brand-900 dark:bg-brand-400/10 dark:text-brand-400'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
                 }`
               }
@@ -73,7 +73,7 @@ function Sidebar({ isOpen, onClose }) {
                   <link.icon
                     className={`h-4.5 w-4.5 transition-colors ${
                       isActive
-                        ? 'text-blue-600 dark:text-blue-400'
+                        ? 'text-brand-800 dark:text-brand-400'
                         : 'text-slate-400 group-hover:text-slate-600 dark:text-slate-500 dark:group-hover:text-slate-300'
                     }`}
                   />
@@ -86,7 +86,7 @@ function Sidebar({ isOpen, onClose }) {
 
         <div className="border-t border-slate-200 p-3 dark:border-slate-800">
           <div className="mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-900 text-xs font-semibold text-white">
               {user?.name?.charAt(0).toUpperCase()}
             </span>
 

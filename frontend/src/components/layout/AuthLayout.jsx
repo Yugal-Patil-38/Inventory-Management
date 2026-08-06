@@ -26,7 +26,7 @@ const features = [
 function AuthLayout({ title, subtitle, children }) {
   return (
     <div className="flex min-h-screen">
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-blue-700 p-10 lg:flex xl:p-14">
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-brand-900 p-10 lg:flex xl:p-14">
         <div className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
 
@@ -44,7 +44,7 @@ function AuthLayout({ title, subtitle, children }) {
             Inventory management, without the spreadsheets
           </h2>
 
-          <p className="mt-4 max-w-md text-base text-blue-100">
+          <p className="mt-4 max-w-md text-base text-brand-100">
             Everything your team needs to track stock accurately.
           </p>
 
@@ -61,7 +61,7 @@ function AuthLayout({ title, subtitle, children }) {
                 <p className="mt-3 text-sm font-semibold text-white">
                   {feature.title}
                 </p>
-                <p className="mt-0.5 text-xs leading-relaxed text-blue-100">
+                <p className="mt-0.5 text-xs leading-relaxed text-brand-100">
                   {feature.description}
                 </p>
               </div>
@@ -69,7 +69,7 @@ function AuthLayout({ title, subtitle, children }) {
           </div>
         </div>
 
-        <p className="relative text-xs text-blue-200">
+        <p className="relative text-xs text-brand-200">
           &copy; {new Date().getFullYear()} StockFlow. All rights reserved.
         </p>
       </div>
@@ -77,7 +77,7 @@ function AuthLayout({ title, subtitle, children }) {
       <div className="flex w-full items-center justify-center bg-slate-50 px-4 py-12 lg:w-1/2 dark:bg-slate-950">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex items-center justify-center gap-2.5 lg:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-900">
               <Boxes className="h-5 w-5 text-white" />
             </div>
             <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">

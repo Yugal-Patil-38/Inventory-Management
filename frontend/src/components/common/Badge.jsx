@@ -6,7 +6,7 @@ const tones = {
   red: 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20',
   slate:
     'bg-slate-50 text-slate-600 ring-slate-500/20 dark:bg-slate-500/10 dark:text-slate-400 dark:ring-slate-500/20',
-  blue: 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-400 dark:ring-blue-500/20',
+  brand: 'bg-brand-50 text-brand-900 ring-brand-900/20 dark:bg-brand-400/10 dark:text-brand-400 dark:ring-brand-400/20',
 }
 
 const dots = {
@@ -14,7 +14,7 @@ const dots = {
   amber: 'bg-amber-500',
   red: 'bg-red-500',
   slate: 'bg-slate-400',
-  blue: 'bg-blue-500',
+  brand: 'bg-brand-500',
 }
 
 function Badge({ tone = 'slate', dot = false, children }) {

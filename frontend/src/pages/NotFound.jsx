@@ -9,7 +9,7 @@ function NotFound() {
         <FileQuestion className="h-7 w-7 text-slate-400" />
       </div>
 
-      <p className="mt-6 text-sm font-semibold text-blue-600 dark:text-blue-400">404</p>
+      <p className="mt-6 text-sm font-semibold text-brand-800 dark:text-brand-400">404</p>
 
       <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
         Page not found
